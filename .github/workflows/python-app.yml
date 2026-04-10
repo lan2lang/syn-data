@@ -1,0 +1,34 @@
+name: Feishu Bitable Daily Task
+
+on:
+  schedule:
+    # 每天北京时间上午9点执行（UTC时间1点）
+    - cron: '0 22 * * *'
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  run-feishu-script:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run Feishu script
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_APP_TOKEN: ${{ secrets.FEISHU_APP_TOKEN }}
+          FEISHU_TABLE_ID: ${{ secrets.FEISHU_TABLE_ID }}
+        run: |
+          python demo.py  # 改成你的脚本文件名
