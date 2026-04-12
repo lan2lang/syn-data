@@ -295,7 +295,9 @@ if __name__ == '__main__':
 
     # 
 
-    yesterday = datetime.now() - timedelta(days=1)
+    # yesterday = datetime.now() - timedelta(days=1)
+    yesterday = datetime.now()
+    
     date=yesterday.strftime('%Y-%m-%d')
 
     # date='2026-04-09'
