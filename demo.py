@@ -261,6 +261,32 @@ def upload_feishu(record,table_token,table_id):
 
     # 处理业务结果
     lark.logger.info(lark.JSON.marshal(response.data, indent=4))
+def gen_record2(id,name,data):
+    fields={'账号id':'000'}
+
+    fields["账号id"]=id#岩天下CT3
+    fields["账号名"]=name #岩天下CT3
+   
+    fields["消耗金额(元)"]=data['stat_cost'] 
+    
+    fields["转化数"]=data['convert_cnt'] 
+    fields["转化率"]=data['conversion_rate'] /100
+    fields["转化成本"]=data['conversion_cost'] 
+    fields["表单提交数"]=data['form_cnt'] 
+    fields["私信留资数"]=data['clue_message_count'] 
+    fields["电话拨打数"]=data['phone_confirm_cnt'] 
+    fields["私信咨询数"]=data['message_action_cnt'] 
+    fields["电话接通数"]=data['phone_connect_cnt'] 
+    fields["单日客资总数"]=fields["私信留资数"]+fields["电话拨打数"]+fields["表单提交数"]
+
+    fields['账户余额']=data['balance']
+    # yesterday = datetime.now() - timedelta(days=1)
+    
+    # fields["日期"]=yesterday.strftime('%Y-%m-%d')
+    fields["日期"]=date
+
+    record={'fields':fields}
+    return record
 
 def gen_record(id,name,data):
     fields={'账号id':'000'}
@@ -370,7 +396,7 @@ if __name__ == '__main__':
 
         # exit()
        
-        upload_feishu(gen_record(id,name,data),'PpJobWqdRaBvKSs2B0ScpxDRnVf','tblU6Gjsomi7oRCp')
+        upload_feishu(gen_record2(id,name,data),'PpJobWqdRaBvKSs2B0ScpxDRnVf','tblU6Gjsomi7oRCp')
 
 
     # 如果消耗=0，不上传
