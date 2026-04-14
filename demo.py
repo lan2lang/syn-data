@@ -152,7 +152,9 @@ def get_account_info(local_account_id,token):
           'phone_confirm_cnt',
         "convert_cnt",
         "conversion_cost",
-        "conversion_rate"
+        "conversion_rate",
+         'message_action_cnt',
+        'phone_connect_cnt',
     ]
     metrics = json.dumps(metrics_list)
 
@@ -233,7 +235,7 @@ def update_refresh_token(token):
     lark.logger.info(lark.JSON.marshal(response.data, indent=4))
 
 
-def upload_feishu(record):
+def upload_feishu(record,table_token,table_id):
     # 创建client
     client = lark.Client.builder() \
         .app_id(os.getenv('FEISHU_APP_ID')) \
@@ -243,8 +245,8 @@ def upload_feishu(record):
 
     # 构造请求对象
     request: CreateAppTableRecordRequest = CreateAppTableRecordRequest.builder() \
-        .app_token("L2Dzb3J5eazLrQs38HacUacqntd") \
-        .table_id("tbl03OMtscmnaZ1z") \
+        .app_token(table_token) \
+        .table_id(table_id) \
         .request_body(record) \
         .build()
 
@@ -286,6 +288,24 @@ def gen_record(id,name,data):
     record={'fields':fields}
     return record
 
+def get_balance(ids,token):
+
+    balances={}
+
+    
+    my_args = json.dumps({
+            "account_type": 'LOCAL',
+           
+            "account_ids": [int(k) for k in ids.keys()]
+    })
+    url = "/open_api/v3.0/account/fund/get/"
+    
+    result = get(my_args,token,url)
+    
+    result=result['data']['list']
+    print(result)
+    return result
+
 if __name__ == '__main__':
     app_id = '1860693444062348'
     secret = '6ff21f5d04ee34937ad67eb3945aaf70608cb5b1'
@@ -294,7 +314,7 @@ if __name__ == '__main__':
     token = get_token()
 
     # 
-
+    
     # yesterday = datetime.now() - timedelta(days=1)
     yesterday = datetime.now()
     
@@ -321,6 +341,7 @@ if __name__ == '__main__':
 
              }
 
+    balances= get_balance(account,token)
 
     for id,name in account.items():
         print (id,name)
@@ -329,10 +350,27 @@ if __name__ == '__main__':
             continue
         print(data)
        
-        upload_feishu(gen_record(id,name,data))
+        upload_feishu(gen_record(id,name,data),'L2Dzb3J5eazLrQs38HacUacqntd','tbl03OMtscmnaZ1z')
 
 
+    # 上传到客户表
+    for id,name in account.items():
+        print (id,name)
+        data=get_account_info(id,token)['data']['data_list'][0]
+        print(data)
+        # break
+        if data['stat_cost']==0:
+            continue
+        # 匹配余额
+        for dict in balances:
+            if dict['account_id']==int(id):
+                data['balance']=dict['valid_balance']/100
+                break
+        print(data)
 
+        # exit()
+       
+        upload_feishu(gen_record(id,name,data),'PpJobWqdRaBvKSs2B0ScpxDRnVf','tblU6Gjsomi7oRCp')
 
 
     # 如果消耗=0，不上传
